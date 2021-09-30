@@ -34,7 +34,7 @@ public class YPVideoFiltersVC: UIViewController, IsMediaFilterVC {
     /// Designated initializer
     public class func initWith(video: YPMediaVideo,
                                isFromSelectionVC: Bool) -> YPVideoFiltersVC {
-        let vc = YPVideoFiltersVC(nibName: "YPVideoFiltersVC", bundle: Bundle.local)
+        let vc = YPVideoFiltersVC(nibName: "YPVideoFiltersVC", bundle: Bundle(for: YPVideoFiltersVC.self))
         vc.inputVideo = video
         vc.isFromSelectionVC = isFromSelectionVC
         
@@ -45,7 +45,8 @@ public class YPVideoFiltersVC: UIViewController, IsMediaFilterVC {
 
     override public func viewDidLoad() {
         super.viewDidLoad()
-
+        trimBottomItem.isHidden = true
+        coverBottomItem.isHidden = true
         view.backgroundColor = YPConfig.colors.filterBackgroundColor
         trimmerView.mainColor = YPConfig.colors.trimmerMainColor
         trimmerView.handleColor = YPConfig.colors.trimmerHandleColor
@@ -118,10 +119,7 @@ public class YPVideoFiltersVC: UIViewController, IsMediaFilterVC {
     // MARK: - Top buttons
 
     @objc public func save() {
-        guard let didSave = didSave else {
-            return ypLog("Don't have saveCallback")
-        }
-
+        guard let didSave = didSave else { return print("Don't have saveCallback") }
         navigationItem.rightBarButtonItem = YPLoaders.defaultLoader
 
         do {
@@ -146,17 +144,17 @@ public class YPVideoFiltersVC: UIViewController, IsMediaFilterVC {
                             didSave(YPMediaItem.video(v: resultVideo))
                             self?.setupRightBarButtonItem()
                         } else {
-                            ypLog("Don't have coverImage.")
+                            print("YPVideoFiltersVC -> Don't have coverImage.")
                         }
                     }
                 case .failed:
-                    ypLog("Export of the video failed. Reason: \(String(describing: session.error))")
+                    print("YPVideoFiltersVC Export of the video failed. Reason: \(String(describing: session.error))")
                 default:
-                    ypLog("Export session completed with \(session.status) status. Not handled")
+                    print("YPVideoFiltersVC Export session completed with \(session.status) status. Not handled")
                 }
             }
         } catch let error {
-            ypLog("Error: \(error)")
+            print("💩 \(error)")
         }
     }
     

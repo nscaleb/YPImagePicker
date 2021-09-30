@@ -20,12 +20,11 @@ public class YPVideoView: UIView {
     internal var previewImageView = UIImageView()
     
     public var player: AVPlayer {
-        guard let player = playerLayer.player else {
+        guard playerLayer.player != nil else {
             return AVPlayer()
         }
-        
         playImageView.image = YPConfig.icons.playImage
-        return player
+        return playerLayer.player!
     }
     
     public override init(frame: CGRect) {

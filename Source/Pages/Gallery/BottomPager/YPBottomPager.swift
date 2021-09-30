@@ -9,7 +9,7 @@
 import UIKit
 import Stevia
 
-protocol YPBottomPagerDelegate: AnyObject {
+protocol YPBottomPagerDelegate: class {
     func pagerScrollViewDidScroll(_ scrollView: UIScrollView)
     func pagerDidSelectController(_ vc: UIViewController)
 }
@@ -27,7 +27,7 @@ open class YPBottomPager: UIViewController, UIScrollViewDelegate {
     }
     
     override open func loadView() {
-        v.scrollView.contentInsetAdjustmentBehavior = .never
+        self.automaticallyAdjustsScrollViewInsets = false
         v.scrollView.delegate = self
         view = v
     }
@@ -99,7 +99,7 @@ open class YPBottomPager: UIViewController, UIScrollViewDelegate {
             return
         }
         currentPage = page
-        // select menu item and deselect others
+        //select menu item and deselect others
         for (i, mi) in v.header.menuItems.enumerated() {
             if i == page {
                 mi.select()
@@ -115,7 +115,7 @@ open class YPBottomPager: UIViewController, UIScrollViewDelegate {
         let screenWidth = YPImagePickerConfiguration.screenWidth
         let x = CGFloat(page) * screenWidth
         v.scrollView.setContentOffset(CGPoint(x: x, y: 0), animated: false)
-        // select menut item and deselect others
+        //select menut item and deselect others
         for mi in v.header.menuItems {
             mi.deselect()
         }

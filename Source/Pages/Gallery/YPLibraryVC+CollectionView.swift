@@ -9,7 +9,7 @@
 import UIKit
 
 extension YPLibraryVC {
-    var isLimitExceeded: Bool { return selectedItems.count >= YPConfig.library.maxNumberOfItems }
+    var isLimitExceeded: Bool { return selection.count >= YPConfig.library.maxNumberOfItems }
     
     func setupCollectionView() {
         v.collectionView.backgroundColor = YPConfig.colors.libraryScreenBackgroundColor
@@ -57,13 +57,18 @@ extension YPLibraryVC {
     
     /// Removes cell from selection
     func deselect(indexPath: IndexPath) {
-        if let positionIndex = selectedItems.firstIndex(where: {
+        if let positionIndex = selection.firstIndex(where: {
 			$0.assetIdentifier == mediaManager.fetchResult[indexPath.row].localIdentifier
 		}) {
-            selectedItems.remove(at: positionIndex)
+            selection.remove(at: positionIndex)
 
             // Refresh the numbers
-            let selectedIndexPaths = selectedItems.map { IndexPath(row: $0.index, section: 0) }
+            var selectedIndexPaths = [IndexPath]()
+            mediaManager.fetchResult.enumerateObjects { [unowned self] (asset, index, _) in
+                if self.selection.contains(where: { $0.assetIdentifier == asset.localIdentifier }) {
+                    selectedIndexPaths.append(IndexPath(row: index, section: 0))
+                }
+            }
             v.collectionView.reloadItems(at: selectedIndexPaths)
 			
             // Replace the current selected image with the previously selected one
@@ -80,19 +85,22 @@ extension YPLibraryVC {
     
     /// Adds cell to selection
     func addToSelection(indexPath: IndexPath) {
-        if !(delegate?.libraryViewShouldAddToSelection(indexPath: indexPath,
-                                                       numSelections: selectedItems.count) ?? true) {
+        if !(delegate?.libraryViewShouldAddToSelection(indexPath: indexPath, numSelections: selection.count) ?? true) {
             return
         }
         
         let asset = mediaManager.fetchResult[indexPath.item]
-        let newSelection = YPLibrarySelection(index: indexPath.row, assetIdentifier: asset.localIdentifier)
-        selectedItems.append(newSelection)
+        selection.append(
+            YPLibrarySelection(
+                index: indexPath.row,
+                assetIdentifier: asset.localIdentifier
+            )
+        )
         checkLimit()
     }
     
     func isInSelectionPool(indexPath: IndexPath) -> Bool {
-        return selectedItems.contains(where: {
+        return selection.contains(where: {
 			$0.assetIdentifier == mediaManager.fetchResult[indexPath.row].localIdentifier
 		})
     }
@@ -139,10 +147,10 @@ extension YPLibraryVC: UICollectionViewDelegate {
         cell.isSelected = currentlySelectedIndex == indexPath.row
         
         // Set correct selection number
-        if let index = selectedItems.firstIndex(where: { $0.assetIdentifier == asset.localIdentifier }) {
-            let currentSelection = selectedItems[index]
+        if let index = selection.firstIndex(where: { $0.assetIdentifier == asset.localIdentifier }) {
+            let currentSelection = selection[index]
             if currentSelection.index < 0 {
-                selectedItems[index] = YPLibrarySelection(index: indexPath.row,
+                selection[index] = YPLibrarySelection(index: indexPath.row,
                                                       cropRect: currentSelection.cropRect,
                                                       scrollViewContentOffset: currentSelection.scrollViewContentOffset,
                                                       scrollViewZoomScale: currentSelection.scrollViewZoomScale,
@@ -186,7 +194,7 @@ extension YPLibraryVC: UICollectionViewDelegate {
             collectionView.reloadItems(at: [indexPath])
             collectionView.reloadItems(at: [previouslySelectedIndexPath])
         } else {
-            selectedItems.removeAll()
+            selection.removeAll()
             addToSelection(indexPath: indexPath)
             
             // Force deseletion of previously selected cell.

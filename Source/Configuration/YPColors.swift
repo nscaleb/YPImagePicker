@@ -50,9 +50,6 @@ public struct YPColors {
     /// A color for for bottom buttons not selected text.
     public var bottomMenuItemUnselectedTextColor: UIColor = .ypSecondaryLabel
 
-    /// The color of the crop overlay.
-    public var cropOverlayColor: UIColor = .ypSystemBackground.withAlphaComponent(0.4)
-
     // MARK: - Trimmer
     
     /// The color of the main border of the view

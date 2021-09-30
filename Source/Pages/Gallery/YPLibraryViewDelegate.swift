@@ -9,11 +9,11 @@
 import Foundation
 
 @objc
-public protocol YPLibraryViewDelegate: AnyObject {
+public protocol YPLibraryViewDelegate: class {
     func libraryViewDidTapNext()
     func libraryViewStartedLoadingImage()
     func libraryViewFinishedLoading()
     func libraryViewDidToggleMultipleSelection(enabled: Bool)
+    func noPhotosForOptions()
     func libraryViewShouldAddToSelection(indexPath: IndexPath, numSelections: Int) -> Bool
-    func libraryViewHaveNoItems()
 }

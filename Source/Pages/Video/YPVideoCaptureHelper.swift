@@ -12,16 +12,15 @@ import CoreMotion
 
 /// Abstracts Low Level AVFoudation details.
 class YPVideoCaptureHelper: NSObject {
-    public var isRecording: Bool {
-        return videoOutput.isRecording
-    }
+    
+    public var isRecording: Bool { return videoOutput.isRecording }
     public var didCaptureVideo: ((URL) -> Void)?
     public var videoRecordingProgress: ((Float, TimeInterval) -> Void)?
     
     private let session = AVCaptureSession()
     private var timer = Timer()
     private var dateVideoStarted = Date()
-    private let sessionQueue = DispatchQueue(label: "YPVideoCaptureHelperQueue")
+    private let sessionQueue = DispatchQueue(label: "YPVideoVCSerialQueue")
     private var videoInput: AVCaptureDeviceInput?
     private var videoOutput = AVCaptureMovieFileOutput()
     private var videoRecordingTimeLimit: TimeInterval = 0
@@ -55,7 +54,7 @@ class YPVideoCaptureHelper: NSObject {
         if !session.isRunning {
             sessionQueue.async { [weak self] in
                 // Re-apply session preset
-                self?.session.sessionPreset = .photo
+                self?.session.sessionPreset = .high
                 let status = AVCaptureDevice.authorizationStatus(for: AVMediaType.video)
                 switch status {
                 case .notDetermined, .restricted, .denied:
@@ -65,7 +64,7 @@ class YPVideoCaptureHelper: NSObject {
                     completion()
                     self?.tryToSetupPreview()
                 @unknown default:
-                    ypLog("unknown default reached. Check code.")
+                    fatalError()
                 }
             }
         }
@@ -144,7 +143,7 @@ class YPVideoCaptureHelper: NSObject {
             device.videoZoomFactor = max(minAvailableVideoZoomFactor,
                                          min(desiredZoomFactor, maxAvailableVideoZoomFactor))
         } catch let error {
-            ypLog("Error: \(error)")
+            print("💩 \(error)")
         }
     }
     
@@ -181,6 +180,7 @@ class YPVideoCaptureHelper: NSObject {
     // MARK: - Recording
     
     public func startRecording() {
+        
         let outputURL = YPVideoProcessor.makeVideoPathURL(temporaryFolder: true, fileName: "recordedVideoRAW")
 
         checkOrientation { [weak self] orientation in
@@ -204,9 +204,7 @@ class YPVideoCaptureHelper: NSObject {
     
     private func setupCaptureSession() {
         session.beginConfiguration()
-        let cameraPosition: AVCaptureDevice.Position = YPConfig.usesFrontCamera ? .front : .back
-        let aDevice = deviceForPosition(cameraPosition)
-        
+        let aDevice = deviceForPosition(.back)
         if let d = aDevice {
             videoInput = try? AVCaptureDeviceInput(device: d)
         }
@@ -320,7 +318,7 @@ extension YPVideoCaptureHelper: AVCaptureFileOutputRecordingDelegate {
                            from connections: [AVCaptureConnection],
                            error: Error?) {
         if let error = error {
-            ypLog("Error: \(error)")
+            print(error)
         }
 
         if YPConfig.onlySquareImagesFromCamera {
