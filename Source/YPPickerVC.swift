@@ -18,7 +18,7 @@ protocol YPPickerVCDelegate: AnyObject {
 open class YPPickerVC: YPBottomPager, YPBottomPagerDelegate {
     
     let albumsManager = YPAlbumsManager()
-    var shouldHideStatusBar = false
+    var shouldHideStatusBar = true
     var initialStatusBarHidden = false
     weak var pickerVCDelegate: YPPickerVCDelegate?
     
